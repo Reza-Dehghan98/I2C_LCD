@@ -20,38 +20,82 @@
 
 #include "stdint.h"
 
-#define LCD_CHECK_ENABLE 1
+/**
+ * @brief  if 1 u must set enable before use LCD Function
+ * 
+ */
+#define LCD_CHECK_ENABLE      0
+
+/**
+ * @brief if Set u must Check Lock state before use LCD Function
+ * 
+ */
+#define LCD_CHECK_LOCK_STATUS 0
+
+/**
+ * @brief if 1 user can use Argument Function
+ * 
+ */
+#define LCD_USER_ARGUMENT     0
 
 
+/**
+ * @brief LCD LenType Typedef 
+ * 
+ */
 typedef int8_t LCD_LenType;
-typedef uint32 LCD_Timestamp;
+
+/**
+ * @brief LCD Timestamp Typedef
+ * 
+ */
+typedef uint32_t LCD_Timestamp;
 
 
-
+/**
+ * @brief LCD Config Struct
+ * 
+ */
 typedef struct {
     void*    I2c;
     uint32_t I2C_SlaveAddress;
 } LCD_Config;
 
+/**
+ * @brief Cursor of LCD
+ * 
+ */
 typedef struct {
     LCD_LenType Row;
     LCD_LenType Col;
 } LCD_Cursor;
 
 
+/**
+ * @brief LCD Enable Status 
+ * 
+ */
 typedef enum {
     LCD_Disable = 0,
     LCD_Enable  = 1,
 } LCD_Status;
 
+
+/**
+ * @brief LCD LOCK Status
+ * 
+ */
 typedef enum {
-    LCD_lock   = 1,
     LCD_UnLock = 0,
+    LCD_lock   = 1,
 } LCD_LockStatus;
 
 
 
-
+/**
+ * @brief LCD result 
+ * 
+ */
 typedef enum {
     LCD_Ok               = 0,
     LCD_Error            = 1,
@@ -60,12 +104,22 @@ typedef enum {
     LCD_HeaderValueError = 4,
     LCD_Null             = 5,
     LCD_NullConfig       = 6,
+    LCD_Lock             = 7,
+    LCD_NotEnable        = 8,
 } LCD_Result;
 
-
+/**
+ * @brief PreDefined LCD Struct
+ * 
+ */
 struct _LCD;
 typedef struct _LCD LCD;
 
+
+/**
+ * @brief Main LCD Struct
+ * 
+ */
 struct _LCD{
     struct _LCD*        Previous;
     const LCD_Config*   config;
@@ -80,6 +134,10 @@ struct _LCD{
 typedef LCD_Result (*LCD_transmitFn) (LCD* lcd, uint8_t* data, uint8_t len);
 typedef void       (*LCD_delayMsFn)  (LCD_Timestamp time);
 
+/**
+ * @brief LCD Driver Struct
+ * 
+ */
 typedef struct {
     LCD_transmitFn      LCDTransmit;
     LCD_delayMsFn       LCDDelay;
@@ -96,21 +154,30 @@ void       LCD_driverInit(LCD_Driver* driver);
 LCD_Result LCD_add       (LCD* lcd, LCD_Config* config);
 LCD_Result LCD_remove    (LCD* lcd);
 */
-LCD_Result LCD_init      (LCD* lcd, LCD_Config* config);
-LCD_Result LCD_sendCmd   (LCD* lcd, char cmd);
-LCD_Result LCD_sendData  (LCD* lcd, char data);
-void       LCD_setCursor (LCD* lcd, LCD_LenType row, LCD_LenType col);
-void       LCD_clear     (void);
-void       LCD_setEnable (LCD* lcd, LCD_Status status);
-void       LCD_setConfig (LCD* lcd, LCD_Config* config);
-void       LCD_setLock   (LCD* lcd, LCD_LockStatus lockStatus);
-uint8_t    LCD_isEnabled (LCD* lcd);
-uint8_t    LCD_isLocked  (LCD* lcd);
+LCD_Result LCD_init         (LCD* lcd, LCD_Config* config);
+LCD_Result LCD_sendCmd      (LCD* lcd, char cmd);
+LCD_Result LCD_sendData     (LCD* lcd, char data);
+LCD_Result LCD_setCursor    (LCD* lcd, LCD_LenType row, LCD_LenType col);
+LCD_Result LCD_clear        (void);
+LCD_Result LCD_showStringAt (LCD* lcd, char* str, LCD_LenType row, LCD_LenType col);
+LCD_Result LCD_showString   (LCD* lcd, char* str);
+void       LCD_setConfig    (LCD* lcd, LCD_Config* config);
+uint8_t    LCD_isConfigured (LCD* lcd);
 
+#if LCD_CHECK_ENABLE
+void       LCD_setEnable    (LCD* lcd, LCD_Status status);
+uint8_t    LCD_isEnabled    (LCD* lcd);
+#endif
 
-void       LCD_setArg    (LCD* lcd, void* arg);
-void*      LCD_getArg    (LCD* lcd);
+#if LCD_CHECK_LOCK_STATUS
+void       LCD_setLock      (LCD* lcd, LCD_LockStatus lockStatus);
+uint8_t    LCD_isLocked     (LCD* lcd);
+#endif
 
+#if LCD_USER_ARGUMENT
+void       LCD_setArg     (LCD* lcd, void* arg);
+void*      LCD_getArg     (LCD* lcd);
+#endif
 
 
 
